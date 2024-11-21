@@ -11,6 +11,8 @@ from .io import ComparisonInputs, InspectionInputs, Input, QuantileRange
 
 class ComparisonScatter:
 
+    plot_identifier: str = "ComparisonScatter"
+
     def __init__(self, data: ComparisonInputs, folder_out: str, title: str = "", 
                 xlabel: str | None = None, ylabel: str | None = None, 
                 unit: str | None = None, quantity: str | None = None, 
@@ -62,12 +64,19 @@ class ComparisonScatter:
                                                       xlabel=self.xlabel, 
                                                       ylabel=self.ylabel, 
                                                       quantity=self.quantity,
+                                                      plot_identifier=self.plot_identifier,
                                                       folder_out=self.folder_out))
 
         return file_names
     
     @staticmethod
-    def plot_comparison_scatter(c: ms.ComparerCollection, title: str, xlabel:str, ylabel:str, quantity: str, folder_out:str):
+    def plot_comparison_scatter(c: ms.ComparerCollection, 
+                            title: str, 
+                            xlabel:str, 
+                            ylabel:str, 
+                            quantity: str, 
+                            plot_identifier: str,
+                            folder_out:str):
         """
         Plots a scatter plot for a comparer collection.
 
@@ -77,6 +86,7 @@ class ComparisonScatter:
             xlabel (str): The label for the x-axis.
             ylabel (str): The label for the y-axis.
             quantity (str): The quantity to use for the plot.
+            plot_identifier (str): Part of the output filename.
             folder_out (str): The path to save the scatter plot to.
 
         Returns:
@@ -95,7 +105,7 @@ class ComparisonScatter:
         )
 
         Path(folder_out).mkdir(parents=True, exist_ok=True)
-        file_out = Path(folder_out) / f"ComparisonScatter_{quantity.replace(' ', '')}_{name}.png"
+        file_out = Path(folder_out) / f"{plot_identifier}_{quantity.replace(' ', '')}_{name}.png"
         plt.savefig(file_out, dpi=300, bbox_inches='tight')
         
         return file_out
@@ -151,6 +161,8 @@ class ComparisonScatter:
             self.ylabel = f"{self.model_label} - {self.quantity_name} [{self.unit}]" 
 
 class ComparisonTimeseries:
+
+    plot_identifier: str = "ComparisonTimeseries"
 
     def __init__(self, data: ComparisonInputs, folder_out: str, title: str = "", 
                 xlabel: str | None = None, ylabel: str | None = None, 
@@ -221,6 +233,7 @@ class ComparisonTimeseries:
                                                               ylabel = self.ylabel, 
                                                               y2label = self.y2label,
                                                               quantity = self.quantity,
+                                                              plot_identifier=self.plot_identifier,
                                                               folder_out= self.folder_out,
                                                               y1_lim = y1_lim,
                                                               y2_lim = y2_lim,
@@ -243,6 +256,7 @@ class ComparisonTimeseries:
                                 y2label: str,
                                 folder_out: str, 
                                 quantity: str,
+                                plot_identifier: str,
                                 y1_lim: list[float | None, float | None], 
                                 y2_lim: list[float | None, float | None], 
                                 model_quantiles: QuantileRange | None = None,
@@ -267,6 +281,7 @@ class ComparisonTimeseries:
             y2label (str): The label for the y-axis of the lower panel.
             folder_out (str): The directory to save the plot file.
             quantity (str): The quantity being plotted.
+            plot_identifier (str): Part of the output filename.
             y1_lim (list[float | None, float | None]): The y-axis limits for the upper panel.
             y2_lim (list[float | None, float | None]): The y-axis limits for the lower panel.
             model_quantiles (QuantileRange | None, optional): The quantile range for the model data, if available.
@@ -294,14 +309,12 @@ class ComparisonTimeseries:
         ax1.plot(obs.index, obs, color="k", linewidth=linewidth, label=obs_label)
 
         ax1.set_ylabel(ylabel, color='k')
-        ax1.set_title(title)
+        ax1.set_title(f"{title} {name}")
         ax1.grid(axis='y', linestyle='--', linewidth=0.5)
         ax1.set_ylim([y1_lim[0], y1_lim[1]])
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%b-%d'))
         ax1.set_xlim(mod.index.min(), mod.index.max())
         ax1.legend(frameon=False)
-        ax1.xaxis_date()
 
         ax2.plot(dev.index, dev, color="gray", linestyle="--", linewidth=1)
         ax2.set_ylabel(f'{y2label}', color='k')
@@ -310,10 +323,11 @@ class ComparisonTimeseries:
         ax2.set_xlim(mod.index.min(), mod.index.max())
         ax2.set_xlabel(xlabel)
         plt.tight_layout()
+        fig.autofmt_xdate()
 
         Path(folder_out).mkdir(parents=True, exist_ok=True)
 
-        file_out = Path(folder_out) / f"ComparisonTimeseries_{quantity.replace(' ', '')}_{name}.png"
+        file_out = Path(folder_out) / f"{plot_identifier}_{quantity.replace(' ', '')}_{name}.png"
 
         plt.savefig(file_out, dpi=300, bbox_inches='tight')
 
@@ -379,6 +393,8 @@ class ComparisonTimeseries:
 
 class InspectionTimeseries:
 
+    plot_identifier: str = "InspectionTimeseries"
+
     def __init__(self, data: InspectionInputs, folder_out: str, title: str = "", 
             xlabel: str | None = None, ylabel: str | None = None, 
             unit: str | None = None, quantity: str | None = None, 
@@ -441,12 +457,14 @@ class InspectionTimeseries:
                                                               quantity = self.quantity,
                                                               folder_out= self.folder_out,
                                                               y1_lim = y1_lim,
+                                                              plot_identifier=self.plot_identifier,
                                                               model_quantiles = input.model_quantiles_data))
         
         return file_names
     
     @staticmethod
-    def plot_inspection_timeseries(name: str, 
+    def plot_inspection_timeseries(
+                                name: str, 
                                 mod: pd.Series, 
                                 mod_label: str, 
                                 title: str, 
@@ -454,6 +472,7 @@ class InspectionTimeseries:
                                 ylabel: str, 
                                 folder_out: str, 
                                 quantity: str,
+                                plot_identifier: str,
                                 y1_lim: list[float | None, float | None], 
                                 model_quantiles: QuantileRange | None = None) -> str:
         """
@@ -468,6 +487,7 @@ class InspectionTimeseries:
             ylabel (str): The label for the y-axis.
             folder_out (str): The directory to save the plot file.
             quantity (str): The quantity being plotted.
+            plot_identifier (str): Part of the output filename.
             y1_lim (list[float | None, float | None]): The y-axis limits for the upper panel.
             model_quantiles (QuantileRange | None, optional): The quantile range for the model data, if available.
 
@@ -488,20 +508,19 @@ class InspectionTimeseries:
 
         ax1.set_ylabel(ylabel, color='k')
         ax1.set_xlabel(xlabel, color='k')
-        ax1.set_title(title)
+        ax1.set_title(f"{title} {name}")
         ax1.grid(axis='y', linestyle='--', linewidth=0.5)
         ax1.set_ylim([y1_lim[0], y1_lim[1]])
-        # ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%b-%d'))
         ax1.set_xlim(mod.index.min(), mod.index.max())
         ax1.legend(frameon=False)
-        ax1.xaxis_date()
+        fig.autofmt_xdate()
 
         plt.tight_layout()
 
         Path(folder_out).mkdir(parents=True, exist_ok=True)
 
-        file_out = Path(folder_out) / f"InspectionTimeseries_{quantity.replace(' ', '')}_{name}.png"
+        file_out = Path(folder_out) / f"{plot_identifier}_{quantity.replace(' ', '')}_{name}.png"
 
         plt.savefig(file_out, dpi=300, bbox_inches='tight')
 
@@ -582,14 +601,14 @@ def plot_overview(input: list[Input], mesh_file: str, crs: str="epsg:25832", zoo
         raise ValueError(f"Language must be one of {allowed_languages}")
     
     if language == "de":
-        title = "Verwendete Messstationen"
-        bath = "Bathymetrie [mNHN]"
+        title = "Evaluierungsstandorte"
+        bath = "Bathymetrie [m]"
         easting = "Rechtswert [m]"
         northing = "Hochwert [m]"
 
     elif language == "en":
-        title = "Used Measurement Stations"
-        bath = "Bathymetry [mNHN]"
+        title = "Evaluation Locations"
+        bath = "Bathymetry [m]"
         easting = "Easting [m]"
         northing = "Northing [m]"
 
