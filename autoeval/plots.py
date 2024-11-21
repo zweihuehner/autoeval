@@ -260,7 +260,8 @@ class ComparisonTimeseries:
                                 y1_lim: list[float | None, float | None], 
                                 y2_lim: list[float | None, float | None], 
                                 model_quantiles: QuantileRange | None = None,
-                                observation_quantiles: QuantileRange | None = None):
+                                observation_quantiles: QuantileRange | None = None,
+                                deviation: bool = True):
         """
         Plots a comparison timeseries plot with model, observation, and deviation data.
 
@@ -286,11 +287,16 @@ class ComparisonTimeseries:
             y2_lim (list[float | None, float | None]): The y-axis limits for the lower panel.
             model_quantiles (QuantileRange | None, optional): The quantile range for the model data, if available.
             observation_quantiles (QuantileRange | None, optional): The quantile range for the observation data, if available.
+            deviation (bool): If the deviation is also plotted.
 
         Returns:
             str: The file path of the saved plot image.
         """
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11.7, 6), sharex=True, gridspec_kw={'height_ratios': [2, 1]})
+        if deviation:
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11.7, 6), sharex=True, gridspec_kw={'height_ratios': [2, 1]})
+        else:
+            fig, ax1 = plt.subplots(figsize=(11.7, 6))
+
 
         linewidth = 2
 
@@ -316,12 +322,13 @@ class ComparisonTimeseries:
         ax1.set_xlim(mod.index.min(), mod.index.max())
         ax1.legend(frameon=False)
 
-        ax2.plot(dev.index, dev, color="gray", linestyle="--", linewidth=1)
-        ax2.set_ylabel(f'{y2label}', color='k')
-        ax2.axhline(y=0, color='lightgray', linestyle='--', linewidth=1)
-        ax2.set_ylim([y2_lim[0], y2_lim[1]])
-        ax2.set_xlim(mod.index.min(), mod.index.max())
-        ax2.set_xlabel(xlabel)
+        if deviation:
+            ax2.plot(dev.index, dev, color="gray", linestyle="--", linewidth=1)
+            ax2.set_ylabel(f'{y2label}', color='k')
+            ax2.axhline(y=0, color='lightgray', linestyle='--', linewidth=1)
+            ax2.set_ylim([y2_lim[0], y2_lim[1]])
+            ax2.set_xlim(mod.index.min(), mod.index.max())
+            ax2.set_xlabel(xlabel)
         plt.tight_layout()
         fig.autofmt_xdate()
 
